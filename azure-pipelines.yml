@@ -1,0 +1,31 @@
+trigger:
+- master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- task: DotNetCoreCLI@2
+  displayName: "Build & Pack"
+  inputs:
+    command: 'build'
+    projects: 'DotNetPepper.LanguageExtensions.sln'
+    arguments: '-c $(Configuration)'
+- task: DotNetCoreCLI@2
+  displayName: Run Tests
+  inputs:
+    command: 'test'
+    projects: '**\*Tests.csproj'
+    arguments: '--no-build'
+- task: CopyFiles@2
+  displayName: Copy packages
+  inputs:
+    SourceFolder: '.'
+    Contents: '**\*.nupkg'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)/Packages'
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)/Packages'
+    ArtifactName: 'Packages'
+    publishLocation: 'Container'
+
